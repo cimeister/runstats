@@ -30,8 +30,9 @@ class Statistics(object):
 
     def clear(self):
         """Clear Statistics object."""
-        self._count = self._eta = self._rho = self._tau = self._phi = 0.0
+        self._count = self._eta = self._rho = self._rho2 = self._max_offset = self._tau = self._phi = 0.0
         self._min = self._max = float('nan')
+        self._last = None
 
     def __eq__(self, that):
         return self.get_state() == that.get_state()
@@ -45,10 +46,12 @@ class Statistics(object):
             self._count,
             self._eta,
             self._rho,
+            self._rho2,
             self._tau,
             self._phi,
             self._min,
             self._max,
+            self._max_offset
         )
 
     def set_state(self, state):
@@ -57,10 +60,12 @@ class Statistics(object):
             self._count,
             self._eta,
             self._rho,
+            self._rho2,
             self._tau,
             self._phi,
             self._min,
             self._max,
+            self._max_offset
         ) = state
 
     @classmethod
@@ -84,8 +89,9 @@ class Statistics(object):
         """Number of values that have been pushed."""
         return int(self._count)
 
-    def push(self, value):
+    def push(self, value, cur_max=None):
         """Add `value` to the Statistics summary."""
+        assert False
         value = float(value)
 
         if self._count == 0.0:
@@ -113,6 +119,15 @@ class Statistics(object):
         )
         self._rho += term
 
+        #additions
+        if self._last is not None:
+            self._rho2 += (value - self._last)**2
+        self._last = value
+
+        if cur_max is not None:
+            self._max_offset += (value - cur_max)**2
+
+
     def minimum(self):
         """Minimum of values."""
         return self._min
@@ -124,6 +139,14 @@ class Statistics(object):
     def mean(self):
         """Mean of values."""
         return self._eta
+
+    def max_offset(self):
+        """Mean of values."""
+        return self._max_offset / self._count
+
+    def local_variance(self):
+        """Variance of values (with `ddof` degrees of freedom)."""
+        return self._rho2 / (self._count - ddof)
 
     def variance(self, ddof=1.0):
         """Variance of values (with `ddof` degrees of freedom)."""
@@ -168,6 +191,10 @@ class Statistics(object):
             + delta2 * self._count * that._count / sum_count
         )
 
+        sum_rho2 = (
+            self._rho2 + that._rho2
+        )
+
         sum_tau = (
             self._tau + that._tau
             + delta3 * self._count * that._count
@@ -200,6 +227,7 @@ class Statistics(object):
         self._count = sum_count
         self._eta = sum_eta
         self._rho = sum_rho
+        self._rho2 = sum_rho2
         self._tau = sum_tau
         self._phi = sum_phi
 
@@ -218,6 +246,7 @@ class Statistics(object):
         that = float(that)
         self._count *= that
         self._rho *= that
+        self._rho2 *= that
         self._tau *= that
         self._phi *= that
         return self

@@ -22,10 +22,13 @@ cdef class Statistics(object):
     cdef public double _count
     cdef public double _eta
     cdef public double _rho
+    cdef public double _rho2
     cdef public double _tau
     cdef public double _phi
     cdef public double _min
     cdef public double _max
+    cdef public double _last
+    cdef public double _max_offset
 
     def __init__(self, iterable=()):
         """Initialize Statistics object.
@@ -40,7 +43,7 @@ cdef class Statistics(object):
 
     cpdef clear(self):
         """Clear Statistics object."""
-        self._count = self._eta = self._rho = self._tau = self._phi = 0.0
+        self._count = self._eta = self._rho = self._rho2 = self._max_offset = self._tau = self._phi = 0.0
         self._min = self._max = float('nan')
 
     def __richcmp__(self, other, op):
@@ -57,10 +60,13 @@ cdef class Statistics(object):
             self._count,
             self._eta,
             self._rho,
+            self._rho2,
             self._tau,
             self._phi,
             self._min,
             self._max,
+            self._last,
+            self._max_offset
         )
 
     def set_state(self, state):
@@ -69,10 +75,13 @@ cdef class Statistics(object):
             self._count,
             self._eta,
             self._rho,
+            self._rho2,
             self._tau,
             self._phi,
             self._min,
             self._max,
+            self._last,
+            self._max_offset
         ) = state
 
     @classmethod
@@ -96,7 +105,7 @@ cdef class Statistics(object):
         """Number of values that have been pushed."""
         return int(self._count)
 
-    cpdef push(self, double value):
+    cpdef push(self, double value, cur_max=None):
         """Add `value` to the Statistics summary."""
         cdef double val = value
 
@@ -125,14 +134,40 @@ cdef class Statistics(object):
         )
         self._rho += term
 
+        #additions
+        if cur_max is not None:
+            self._max_offset += (value - cur_max)**2
+
+        if self._count > 1:
+            self._rho2 += (value - self._last)**2
+        self._last = value
+
     cpdef minimum(self):
         """Minimum of values."""
         return self._min
+
+    cpdef pos_minimum(self, value):
+        cdef double val = value
+        return min(val,self._min)
 
     cpdef maximum(self):
         """Maximum of values."""
         return self._max
 
+    cpdef pos_maximum(self, value):
+        """Maximum of values."""
+        cdef double val = value
+        return max(val, self._max)
+
+    cpdef pos_mean(self, value):
+        """Mean of values."""
+        cdef double val = value
+        delta = val - self._eta
+        delta_n = delta / (self._count + 1)
+        delta_n2 = delta_n * delta_n
+        term = delta * delta_n * self._count
+        return self._eta + delta_n
+        
     cpdef mean(self):
         """Mean of values."""
         return self._eta
@@ -140,6 +175,33 @@ cdef class Statistics(object):
     cpdef variance(self, ddof=1.0):
         """Variance of values (with `ddof` degrees of freedom)."""
         return self._rho / (self._count - ddof)
+
+    cpdef pos_variance(self, value, ddof=1.0):
+        cdef double val = value
+        delta = val - self._eta
+        delta_n = delta / (self._count + 1)
+        delta_n2 = delta_n * delta_n
+        term = delta * delta_n * self._count
+        return (self._rho + term) / (self._count + 1 - ddof)
+
+    cpdef local_variance(self, ddof=0.0):
+        """Variance of values (with `ddof` degrees of freedom)."""
+        return self._rho2 / (self._count - ddof)
+
+    cpdef pos_local_variance(self, value, ddof=0.0):
+        """Variance of values (with `ddof` degrees of freedom)."""
+        cdef double val = value
+        return (self._rho2 + (value - self._last)**2)/ (self._count + 1 - ddof)
+
+    cpdef max_offset(self):
+        """Variance of values (with `ddof` degrees of freedom)."""
+        return self._max_offset 
+
+    cpdef pos_max_offset(self, value, max_):
+        """Maximum of values."""
+        cdef double val = value
+        cdef double _max = max_
+        return self._max_offset + (val - _max)**2
 
     cpdef stddev(self, ddof=1.0):
         """Standard deviation of values (with `ddof` degrees of freedom)."""
