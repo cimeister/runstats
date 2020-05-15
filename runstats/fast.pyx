@@ -43,7 +43,7 @@ cdef class Statistics(object):
 
     cpdef clear(self):
         """Clear Statistics object."""
-        self._count = self._eta = self._rho = self._rho2 = self._max_offset = self._tau = self._phi = 0.0
+        self._count = self._last = self._eta = self._rho = self._rho2 = self._max_offset = self._tau = self._phi = 0.0
         self._min = self._max = float('nan')
 
     def __richcmp__(self, other, op):
@@ -138,8 +138,7 @@ cdef class Statistics(object):
         if cur_max is not None:
             self._max_offset += (value - cur_max)**2
 
-        if self._count > 1:
-            self._rho2 += (value - self._last)**2
+        self._rho2 += (value - self._last)**2
         self._last = value
 
     cpdef minimum(self):
@@ -174,10 +173,14 @@ cdef class Statistics(object):
 
     cpdef variance(self, ddof=1.0):
         """Variance of values (with `ddof` degrees of freedom)."""
+        if self._count < 2:
+            return (self._last - 0.0)**2 / 2
         return self._rho / (self._count - ddof)
 
     cpdef pos_variance(self, value, ddof=1.0):
         cdef double val = value
+        if self._count == 0:
+            return (val - 0.0)**2 / 2
         delta = val - self._eta
         delta_n = delta / (self._count + 1)
         delta_n2 = delta_n * delta_n
