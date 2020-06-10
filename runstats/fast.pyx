@@ -28,6 +28,7 @@ cdef class Statistics(object):
     cdef public double _min
     cdef public double _max
     cdef public double _last
+    cdef public double _square
     cdef public double _max_offset
 
     def __init__(self, iterable=()):
@@ -43,7 +44,7 @@ cdef class Statistics(object):
 
     cpdef clear(self):
         """Clear Statistics object."""
-        self._count = self._last = self._eta = self._rho = self._rho2 = self._max_offset = self._tau = self._phi = 0.0
+        self._count = self._last = self._eta = self._rho = self._rho2 = self._max_offset = self._tau = self._square = self._phi = 0.0
         self._min = self._max = float('nan')
 
     def __richcmp__(self, other, op):
@@ -66,6 +67,7 @@ cdef class Statistics(object):
             self._min,
             self._max,
             self._last,
+            self._square,
             self._max_offset
         )
 
@@ -81,6 +83,7 @@ cdef class Statistics(object):
             self._min,
             self._max,
             self._last,
+            self._square,
             self._max_offset
         ) = state
 
@@ -139,6 +142,7 @@ cdef class Statistics(object):
             self._max_offset += (value - cur_max)**2
 
         self._rho2 += (value - self._last)**2
+        self._square += val**2
         self._last = value
 
     cpdef minimum(self):
@@ -205,6 +209,13 @@ cdef class Statistics(object):
         cdef double val = value
         cdef double _max = max_
         return self._max_offset + (val - _max)**2
+
+    cpdef squares(self):
+        return self._square
+
+    cpdef pos_squares(self, value):
+        cdef double val = value
+        return self._square + val**2
 
     cpdef stddev(self, ddof=1.0):
         """Standard deviation of values (with `ddof` degrees of freedom)."""
