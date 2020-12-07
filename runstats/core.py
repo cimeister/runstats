@@ -93,7 +93,6 @@ class Statistics(object):
 
     def push(self, value, cur_max=None):
         """Add `value` to the Statistics summary."""
-        assert False
         value = float(value)
 
         if self._count == 0.0:
