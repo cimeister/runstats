@@ -9,6 +9,7 @@ from __future__ import division
 
 class Statistics(object):
     """Compute statistics in a single pass.
+    # pylint: disable=too-many-instance-attributes
 
     Computes the minimum, maximum, mean, variance, standard deviation,
     skewness, and kurtosis.
@@ -30,7 +31,8 @@ class Statistics(object):
 
     def clear(self):
         """Clear Statistics object."""
-        self._count = self._eta = self._rho = self._rho2 = self._max_offset = self._tau = self._phi = 0.0
+        self._count = self._eta = self._rho = self._rho2 \
+                    = self._max_offset = self._tau = self._phi = 0.0
         self._min = self._max = float('nan')
         self._last = None
 
@@ -144,7 +146,7 @@ class Statistics(object):
         """Mean of values."""
         return self._max_offset / self._count
 
-    def local_variance(self):
+    def local_variance(self, ddof=1.0):
         """Variance of values (with `ddof` degrees of freedom)."""
         return self._rho2 / (self._count - ddof)
 
