@@ -67,55 +67,55 @@ jobs:
       run: python setup.py sdist
 
     - name: Stage windows-latest 3.6
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-windows-latest-3.6
     - run: mv -v dist-windows-latest-3.6/* dist/
 
     - name: Stage windows-latest 3.7
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-windows-latest-3.7
     - run: mv -v dist-windows-latest-3.7/* dist/
 
     - name: Stage windows-latest 3.8
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-windows-latest-3.8
     - run: mv -v dist-windows-latest-3.8/* dist/
 
     - name: Stage ubuntu-latest 3.6
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-ubuntu-latest-3.6
     - run: mv -v dist-ubuntu-latest-3.6/* dist/
 
     - name: Stage ubuntu-latest 3.7
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-ubuntu-latest-3.7
     - run: mv -v dist-ubuntu-latest-3.7/* dist/
 
     - name: Stage ubuntu-latest 3.8
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-ubuntu-latest-3.8
     - run: mv -v dist-ubuntu-latest-3.8/* dist/
 
     - name: Stage macos-latest 3.6
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-macos-latest-3.6
     - run: mv -v dist-macos-latest-3.6/* dist/
 
     - name: Stage macos-latest 3.7
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-macos-latest-3.7
     - run: mv -v dist-macos-latest-3.7/* dist/
 
     - name: Stage macos-latest 3.8
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4.1.7
       with:
         name: dist-macos-latest-3.8
     - run: mv -v dist-macos-latest-3.8/* dist/
